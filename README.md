@@ -24,6 +24,6 @@ Na primeira etapa, vamos trabalhar apenas com HTML e CSS, estruturando o display
   - [Quando usar **!important** é a escolha certa?](https://css-tricks.com/when-using-important-is-the-right-choice)
   - **[CSS !important](https://zenorocha.com/css-important)**
 
----
+## Layout
 
-[LAYOUT DA CALCULADORA](em breve)
+![LAYOUT DA CALCULADORA](/assets/calculadora.png)
