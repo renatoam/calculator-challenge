@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <section class="calculator">
+    <section class="calculator__wrapper">
+      <section class="calculator__panel">
+        <input type="text" id="history" class="calculator__history" readonly disabled />
+        <input type="text" id="display" class="calculator__display" readonly disabled />
+      </section>
+      <section class="calculator__keyboard">
+        <section class="calculator__column">
+          <button class="calculator__button" id="clear">C</button>
+          <button class="calculator__button js-number" id="one">1</button>
+          <button class="calculator__button js-number" id="four">4</button>
+          <button class="calculator__button js-number" id="seven">7</button>
+          <button class="calculator__button js-number" id="zero">0</button>
+        </section>
+        <section class="calculator__column">
+          <button class="calculator__button" id="plusMinus">+/-</button>
+          <button class="calculator__button js-number" id="two">2</button>
+          <button class="calculator__button js-number" id="five">5</button>
+          <button class="calculator__button js-number" id="eight">8</button>
+          <button class="calculator__button" id="period">.</button>
+        </section>
+        <section class="calculator__column">
+          <button class="calculator__button" id="percent">%</button>
+          <button class="calculator__button js-number" id="three">3</button>
+          <button class="calculator__button js-number" id="six">6</button>
+          <button class="calculator__button js-number" id="nine">9</button>
+          <button class="calculator__button" id="equal">=</button>
+        </section>
+        <section class="calculator__column">
+          <button class="calculator__button js-operator" data-sign="+" id="sum">+</button>
+          <button class="calculator__button js-operator" data-sign="-" id="minus">-</button>
+          <button class="calculator__button js-operator" data-sign="*" id="multiply">x</button>
+          <button class="calculator__button js-operator" data-sign="/" id="divide">/</button>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <script src="script.js"></script>
+  
+</body>
+</html>
