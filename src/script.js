@@ -33,95 +33,107 @@ Clear Display: ele gerencia a limpeza da tela; se true, a tela será limpa no
 próximo dígito, se false, a tela permanece exibindo
 Result: recebe o resultado da operação
 */
-const calculationElements = {
-  display: 0,
-  history: [],
-  operator: null,
-  values: [null, null],
-  currentValue: 0,
-  temporaryValue: [],
-  lastNumber: null,
-  clearDisplay: false,
-  result: null
+
+// Precisei fazer uma deep copy, porque criar um objeto a partir de outro, 
+// mantém os dois com a mesma referência, ou seja, quando copio um objeto 
+// ou crio um a partir de outro, eu não estou copiando o objeto em si, 
+// mas duplicando sua referência
+function fnInitialState() {
+  return JSON.parse(JSON.stringify({
+    display: 0,
+    history: [],
+    operator: null,
+    values: [null, null],
+    currentValue: 0,
+    temporaryValue: [],
+    lastNumber: null,
+    clearDisplay: false,
+    result: null
+  }))
 }
+
+let stateControl = fnInitialState();
 
 // Funções que serão disparadas assim que o DOM carregar
 function fnOnWindowLoadActions() {
   fnSetDisplayValue()
 }
 
+function fnResetCalculator() {
+  stateControl = fnInitialState();
+  fnSetDisplayValue()
+  historyElement.value = ""
+}
+
 // define o valor do display (o estado e o elemento)
-function fnSetDisplayValue(value = calculationElements.display) {
+function fnSetDisplayValue(value = stateControl.display) {
   displayElement.value = value;
-  calculationElements.display = value;
+  stateControl.display = value;
 }
 
 // limpa a tela e os valores temporários
 function fnHandleClearDisplayValue() {
-  if (calculationElements.clearDisplay || calculationElements.display === "0") {
+  if (stateControl.clearDisplay || stateControl.display === "0") {
     fnSetDisplayValue('');
-    calculationElements.temporaryValue.length = 0;
+    stateControl.temporaryValue.length = 0;
   }
 }
 
 // muda o ultimo operador digitado (no estado e no histórico)
 function fnChangeLastOperator(newOperator) {
   const operator = newOperator.dataset.sign
-  calculationElements.operator = newOperator
-  calculationElements.history.pop()
-  calculationElements.history.push(operator)
-  historyElement.value = calculationElements.history.join('')
+  stateControl.operator = newOperator
+  stateControl.history.pop()
+  stateControl.history.push(operator)
+  historyElement.value = stateControl.history.join('')
 }
 
 // adiciona o ultimos valor e operador digitados no histórico
 function fnSetHistoryLastValues(newValue, newOperator) {
-  const operator = newOperator.dataset.sign;
-  newValue && calculationElements.history.push(newValue);
-  calculationElements.history.push(operator)
-  historyElement.value = calculationElements.history.join('');
+  const operator = newOperator && newOperator.dataset.sign;
+  newValue && stateControl.history.push(newValue);
+  operator && stateControl.history.push(operator);
+  historyElement.value = stateControl.history.join('');
 }
 
 // muda o current value
 function fnToggleCurrentValue() {
-  if (calculationElements.currentValue === 0) calculationElements.currentValue = 1;
-  else calculationElements.currentValue = 0;
+  if (stateControl.currentValue === 0) stateControl.currentValue = 1;
+  else stateControl.currentValue = 0;
 }
 
 // recebe cada numero digitado e retorna um valor completo e tratado
 function fnGetRealTimeValues(value) {
-  calculationElements.clearDisplay = false;
-  calculationElements.temporaryValue.push(value.textContent);
-  calculationElements.lastNumber = Number(calculationElements.temporaryValue.join(''));
-  return calculationElements.lastNumber;
+  stateControl.clearDisplay = false;
+  stateControl.temporaryValue.push(value.textContent);
+  stateControl.lastNumber = Number(stateControl.temporaryValue.join(''));
+  return stateControl.lastNumber;
 }
 
 // gerencia qual valor (0 ou 1) vai receber os digitos e exibe na tela conforme 
 // forem sendo digitados
 function fnNumberCalculations(value) {
-
   fnHandleClearDisplayValue();
 
   const number = fnGetRealTimeValues(value);
-  const scenarioToFillValueZero = calculationElements.operator === null && calculationElements.result === null
+  const scenarioToFillValueZero = stateControl.operator === null && stateControl.result === null
 
-  if (scenarioToFillValueZero) calculationElements.values[0] = number
-  else calculationElements.values[1] = number
+  if (scenarioToFillValueZero) stateControl.values[0] = number
+  else stateControl.values[1] = number
 
   fnSetDisplayValue(number);
 }
 
-// gerencia quais são as funcionalidades do operador em cada cenário
+// gerencia quais são as funcionalidades do operador em cada cenário, que eu 
+// criei pra não ficar muito grande, devido às nomenclaturas extensas 
 function fnHandleOperator(newOperator) {
-  
-  // tanto as validações quanto os cenários, eu criei pra não ficar muito grande,
-  // devido às nomeclaturas extensas 
   const validations = {
-    cvzero: calculationElements.currentValue === 0,
-    cvone: calculationElements.currentValue === 1,
-    opnull: calculationElements.operator === null,
-    vzeronull: calculationElements.values[0] === null,
-    vonenull: calculationElements.values[1] === null,
-    history: calculationElements.history.length > 5
+    opnull: stateControl.operator === null,
+    cvone: stateControl.currentValue === 1,
+    cvzero: stateControl.currentValue === 0,
+    history: stateControl.history.length > 5,
+    vonenull: stateControl.values[1] === null,
+    vzeronull: stateControl.values[0] === null
   }
   
   const scenarios = {
@@ -135,13 +147,13 @@ function fnHandleOperator(newOperator) {
     seven: validations.cvone && validations.history
   }
 
-  calculationElements.clearDisplay = true;
+  stateControl.clearDisplay = true;
 
   if (scenarios.zero) return;
 
   if (scenarios.one) {
-    calculationElements.operator = newOperator;
-    fnSetHistoryLastValues(calculationElements.lastNumber, newOperator);
+    stateControl.operator = newOperator;
+    fnSetHistoryLastValues(stateControl.lastNumber, newOperator);
     fnToggleCurrentValue();
     return;
   }
@@ -152,51 +164,55 @@ function fnHandleOperator(newOperator) {
   }
   
   if (scenarios.three || scenarios.five || scenarios.seven) {
-    fnSetHistoryLastValues(calculationElements.lastNumber, newOperator)
-    fnExecuteOperation.call(newOperator)
+    fnHandleCalculationTrigger.call(newOperator)
     fnToggleCurrentValue();
-    calculationElements.operator = newOperator;
-    return
+    stateControl.operator = newOperator;
+    return;
   }
-
 }
 
 // A execução da operação em si
 function fnExecuteOperation() {
-  const operator = calculationElements.operator.id;
-  const values = calculationElements.values;
-  calculationElements.result = operation[operator](values);
-  fnHandleCalculationTrigger.call(this)
-  fnSetDisplayValue(calculationElements.result);
+  const operator = stateControl.operator.id;
+  const values = stateControl.values;
+  stateControl.result = operation[operator](values);
+  stateControl.values[1] = null;
+  stateControl.values[0] = stateControl.result;
+  fnSetDisplayValue(stateControl.result);
 }
 
+// Como a execução do cálculo pode ser feita por esses três botões, eu criei
+// uma função que gerencia isso e define o comportamento pra cada um
 function fnHandleCalculationTrigger() {
   if (this.id === "equal") {
-    console.log("equal");
+    if (stateControl.values[1] === null) stateControl.values[1] = stateControl.lastNumber
+    fnSetHistoryLastValues(stateControl.lastNumber)
+    fnExecuteOperation()
   }
   
   if (this.id === "percent") {
-    console.log("percent");
+    stateControl.values[1] = stateControl.values[1] / 100
+    fnSetHistoryLastValues(stateControl.values[1])
+    fnExecuteOperation()
   }
-  
+
   if (this.classList.contains('js-operator')) {
-    calculationElements.values[1] = null;
-    calculationElements.values[0] = calculationElements.result;
+    fnSetHistoryLastValues(stateControl.lastNumber, this)
+    fnExecuteOperation()
   }
 }
 
 function fnHandlePeriodDigit(value) {
-  if (calculationElements.display.toString().indexOf('.') >= 0) return;
-  else calculationElements.temporaryValue.push(value);
+  if (stateControl.display.toString().indexOf('.') >= 0) return;
+  else stateControl.temporaryValue.push(value);
 }
 
 function fnHandleZeroDigit(value) {
-  if (calculationElements.display === 0) return;
-  else calculationElements.temporaryValue.push(value);
+  if (stateControl.display === 0) return;
+  else stateControl.temporaryValue.push(value);
 }
 
 function fnPressingCalculatorButtons() {
-
   if (this.classList.contains('js-number')) {
     fnNumberCalculations(this)
   }
@@ -231,13 +247,14 @@ dotButton.addEventListener('click', event => {
 });
 
 equalButton.addEventListener('click', event => {
-  fnExecuteOperation.call(event.target);
+  fnHandleCalculationTrigger.call(event.target);
 });
 
 percentButton.addEventListener('click', event => {
-  fnExecuteOperation.call(event.target);
+  fnHandleCalculationTrigger.call(event.target);
 });
 
-clearButton.addEventListener('click', fnHandleClearDisplayValue);
+clearButton.addEventListener('click', fnResetCalculator);
 
 window.addEventListener('load', fnOnWindowLoadActions);
+
