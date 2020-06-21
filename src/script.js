@@ -40,15 +40,16 @@ Result: recebe o resultado da operação
 // mas duplicando sua referência
 function fnInitialState() {
   return JSON.parse(JSON.stringify({
+    clearDisplay: false,
+    currentValue: 0,
     display: 0,
     history: [],
-    operator: null,
-    values: [null, null],
-    currentValue: 0,
-    temporaryValue: [],
     lastNumber: null,
-    clearDisplay: false,
-    result: null
+    operator: null,
+    result: null,
+    temporaryValue: [],
+    values: [null, null],
+    valueOfThis: null
   }))
 }
 
@@ -91,8 +92,20 @@ function fnChangeLastOperator(newOperator) {
 // adiciona o ultimos valor e operador digitados no histórico
 function fnSetHistoryLastValues(newValue, newOperator) {
   const operator = newOperator && newOperator.dataset.sign;
+
+  if (stateControl.valueOfThis === "equal") {
+    stateControl.history.length = 0;
+    stateControl.history.push(stateControl.result);
+    operator ? stateControl.history.push(operator) :
+    stateControl.history.push(stateControl.operator.dataset.sign);
+    newValue && stateControl.history.push(newValue);
+    historyElement.value = stateControl.history.join('');
+    return;
+  }
+  
   newValue && stateControl.history.push(newValue);
-  operator && stateControl.history.push(operator);
+  operator ? stateControl.history.push(operator) :
+  stateControl.history.push(stateControl.operator.dataset.sign);
   historyElement.value = stateControl.history.join('');
 }
 
@@ -159,7 +172,8 @@ function fnHandleOperator(newOperator) {
   }
 
   if (scenarios.two || scenarios.four || scenarios.six) {
-    fnChangeLastOperator(newOperator);
+    if (stateControl.valueOfThis === "equal") stateControl.operator = newOperator
+    else fnChangeLastOperator(newOperator);
     return;
   }
   
@@ -178,6 +192,7 @@ function fnExecuteOperation() {
   stateControl.result = operation[operator](values);
   stateControl.values[1] = null;
   stateControl.values[0] = stateControl.result;
+  stateControl.valueOfThis = this.id
   fnSetDisplayValue(stateControl.result);
 }
 
@@ -187,18 +202,19 @@ function fnHandleCalculationTrigger() {
   if (this.id === "equal") {
     if (stateControl.values[1] === null) stateControl.values[1] = stateControl.lastNumber
     fnSetHistoryLastValues(stateControl.lastNumber)
-    fnExecuteOperation()
+    fnExecuteOperation.call(this)
   }
   
   if (this.id === "percent") {
+    if (stateControl.values.includes(null)) return
     stateControl.values[1] = stateControl.values[1] / 100
     fnSetHistoryLastValues(stateControl.values[1])
-    fnExecuteOperation()
+    fnExecuteOperation.call(this)
   }
 
   if (this.classList.contains('js-operator')) {
     fnSetHistoryLastValues(stateControl.lastNumber, this)
-    fnExecuteOperation()
+    fnExecuteOperation.call(this)
   }
 }
 
