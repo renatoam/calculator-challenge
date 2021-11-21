@@ -1,9 +1,9 @@
-Projeto Refactoring
+# Projeto Refactoring
 O projeto Refactoring consiste em passar por todos os meus repositórios antigos e refatorar o código existente e finalizar os projetos inacabados.
 
 A ideia também é manter a versão antiga em outra branch, assim posso fazer comparações entre eles.
 
-4. Calculadora
+## 4. Calculadora
 Esse desafio consiste em desenvolver uma calculadora para ensinar alguns conceitos iniciais do desenvolvimento Front-End. Iremos desde a estruturação, ensinando conceitos de HTML, passando pela estilização, ensinando CSS e faremos a calculadora funcionar de fato usando Javascript.
 
 ---
